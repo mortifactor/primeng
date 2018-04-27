@@ -499,19 +499,23 @@ export class Table implements OnInit, AfterContentInit {
     }
 
     onPageChange(event) {
-        this.first = event.first;
-        this.rows = event.rows;
+        var pc = this.getPageCount();
 
-        if (this.lazy) {
-            this.onLazyLoad.emit(this.createLazyLoadMetadata());
+        if(event.p >= 0 && event.p < pc) {
+            this.first = event.first * event.p;
+            this.rows = event.rows;
+    
+            if (this.lazy) {
+                this.onLazyLoad.emit(this.createLazyLoadMetadata());
+            }
+    
+            this.onPage.emit({
+                first: this.first,
+                rows: this.rows
+            });
+    
+            this.tableService.onValueChange(this.value);
         }
-
-        this.onPage.emit({
-            first: this.first,
-            rows: this.rows
-        });
-
-        this.tableService.onValueChange(this.value);
     }
 
     sort(event) {
@@ -1628,6 +1632,10 @@ export class Table implements OnInit, AfterContentInit {
     isEmpty() {
         let data = this.filteredValue||this.value;
         return data == null || data.length == 0;
+    }
+
+    getPageCount() {
+        return Math.ceil(this.totalRecords/this.rows)||1;
     }
 
     ngOnDestroy() {
